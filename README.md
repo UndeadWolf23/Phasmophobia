@@ -9,7 +9,7 @@
 
  - Accurate **stamina bar** to track movement endurance.
  - **Hunt timer** to estimate when ghosts stop hunting.
- - **Smudge timer** to track protection duration.
+ - **Smudge timer** to track the time until the next hunt (for use in identifying or eliminating Demons and Spirits).
 
  This tool provides **real-time** assistance without interfering
  with the game, making your ghost hunts smoother and more efficient.
@@ -21,7 +21,7 @@
   [ Executable (.exe) Version ]
  ---------------------------------
  1. **Download & Extract**
-    - Download the `.7z` file and extract it using **7-Zip** or **WinRAR**.
+    - Download the `.7z` file and extract it using **7-Zip** or **WinRAR**. https://www.7-zip.org/
 
  2. **Keep Files Together**
     - Do **NOT** move the `.exe` file from its extracted folder!
@@ -52,6 +52,31 @@
       the Python script as normal.
 
 ====================================================
+ HOW TO USE
+====================================================
+
+  - **Hunt Timer Controls:**
+    - `Ctrl + Z` → Open hunt timer settings. Use the carousel menus to set the map size and difficulty level.
+    - `Ctrl + X` → Start the hunt timer.
+    - Pressing `Ctrl + X` again will **cancel/reset** the hunt timer.
+
+  - **Smudge Timer Controls:**
+    - `Ctrl + C` → Start the smudge timer after smudging a ghost.
+    - Pressing `Ctrl + C` again will **cancel/reset** the smudge timer.
+    - The timer will also indicate the likeliness of a Demon or Spirit.
+
+  - **Stamina Bar Mechanics:**
+    - The **sprint meter** visually tracks stamina usage.
+    - The bar will show:
+      - **Stamina regeneration delay.**
+      - **Regen ramp-up speed.**
+      - **Remaining stamina percentage**
+      - **Stamina recovery period when out of breath**
+
+  These tools help you predict movement limits, optimize survival
+  during hunts, and track down ghost types.
+
+====================================================
   AUTHOR & VERSION INFO
 ====================================================
 
@@ -59,7 +84,6 @@
   - **Version:**     1.5
   - **Release Date:** 03/20/2025
 
-  For feedback, suggestions, or updates, stay tuned 
-  for future releases.
+New features are currently in the works. Stay tuned.
 
   Happy hunting! 👻
