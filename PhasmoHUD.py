@@ -1,4 +1,4 @@
-##Version 1.5 created by UndeadWolf 3/20/2025 - Calibrated for Phasmophobia v0.12.0.2 ##
+## created by UndeadWolf 3/14/2025 - Calibrated for Phasmophobia v0.12.0.2 ##
 
 import pygame
 import sys
@@ -373,31 +373,43 @@ while running:
     screen.fill(BACKGROUND)
     
     # Draw hunt timer if active or if config is shown
-    if hunt_active or show_config:
+    if hunt_active:
         # Draw hunt timer background
         pygame.draw.rect(screen, BAR_BACKGROUND, (BAR_X, HUNT_BAR_Y, BAR_WIDTH, BAR_HEIGHT))
         
-        if hunt_active:
-            # Draw hunt timer progress
-            hunt_progress = hunt_remaining / hunt_duration
-            hunt_width = hunt_progress * BAR_WIDTH
-            pygame.draw.rect(screen, RECOVERY_COLOR, (BAR_X, HUNT_BAR_Y, hunt_width, BAR_HEIGHT))
-            
-            # Draw border around the bar
-            pygame.draw.rect(screen, TEXT_COLOR, (BAR_X, HUNT_BAR_Y, BAR_WIDTH, BAR_HEIGHT), 1)
-            
-            # Draw hunt timer text
-            hunt_text = f"Hunt: {hunt_remaining:.1f}s"
-            text_surface = font.render(hunt_text, True, TEXT_COLOR)
-            text_rect = text_surface.get_rect(center=(WIDTH // 2, HUNT_BAR_Y - 10))
-            screen.blit(text_surface, text_rect)
-        else:
-            # Draw empty hunt timer with text
-            pygame.draw.rect(screen, TEXT_COLOR, (BAR_X, HUNT_BAR_Y, BAR_WIDTH, BAR_HEIGHT), 1)
-            hunt_text = f"Hunt: Ready ({HUNT_DURATIONS[current_difficulty][current_map_size]}s)"
-            text_surface = font.render(hunt_text, True, TEXT_COLOR)
-            text_rect = text_surface.get_rect(center=(WIDTH // 2, HUNT_BAR_Y - 10))
-            screen.blit(text_surface, text_rect)
+        # Draw hunt timer progress
+        hunt_progress = hunt_remaining / hunt_duration
+        hunt_width = hunt_progress * BAR_WIDTH
+        pygame.draw.rect(screen, RECOVERY_COLOR, (BAR_X, HUNT_BAR_Y, hunt_width, BAR_HEIGHT))
+        
+        # Draw border around the bar
+        pygame.draw.rect(screen, TEXT_COLOR, (BAR_X, HUNT_BAR_Y, BAR_WIDTH, BAR_HEIGHT), 1)
+        
+        # Draw hunt timer text
+        hunt_text = f"Hunt: {hunt_remaining:.1f}s"
+        text_surface = font.render(hunt_text, True, TEXT_COLOR)
+        text_rect = text_surface.get_rect(center=(WIDTH // 2, HUNT_BAR_Y - 10))
+        screen.blit(text_surface, text_rect)
+    elif show_config:
+        # Draw empty hunt timer with text when in config mode
+        pygame.draw.rect(screen, BAR_BACKGROUND, (BAR_X, HUNT_BAR_Y, BAR_WIDTH, BAR_HEIGHT))
+        pygame.draw.rect(screen, TEXT_COLOR, (BAR_X, HUNT_BAR_Y, BAR_WIDTH, BAR_HEIGHT), 1)
+        hunt_text = f"Hunt: Ready ({HUNT_DURATIONS[current_difficulty][current_map_size]}s)"
+        text_surface = font.render(hunt_text, True, TEXT_COLOR)
+        text_rect = text_surface.get_rect(center=(WIDTH // 2, HUNT_BAR_Y - 10))
+        screen.blit(text_surface, text_rect)
+    else:
+        # Draw instructional text when hunt timer is inactive
+        hunt_text = "Hunt Timer: Ready (Ctrl+X)"
+        text_surface = font.render(hunt_text, True, TEXT_COLOR)
+        text_rect = text_surface.get_rect(center=(WIDTH // 2, HUNT_BAR_Y))
+        screen.blit(text_surface, text_rect)
+        
+        # Draw smaller text for config hint
+        config_hint = "Settings: Ctrl+Z"
+        hint_surface = font_small.render(config_hint, True, TEXT_COLOR)
+        hint_rect = hint_surface.get_rect(center=(WIDTH // 2, HUNT_BAR_Y + 15))
+        screen.blit(hint_surface, hint_rect)
     
     # Draw stamina bar background
     pygame.draw.rect(screen, BAR_BACKGROUND, (BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT))
@@ -567,4 +579,4 @@ while running:
 pygame.quit()
 sys.exit()
 
-##Version 1.5 created by UndeadWolf 3/20/2025 - Calibrated for Phasmophobia v0.12.0.2 ##
+## created by UndeadWolf 3/14/2025 - Calibrated for Phasmophobia v0.12.0.2 ##
