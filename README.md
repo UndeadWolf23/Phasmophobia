@@ -1,3 +1,5 @@
+Version 1.6 Update: Added animated footstep metronome! Increased overall HUD size. Added toggle for metronome in settings UI.
+
 ====================================================
           PhasmoHUD - Visual Aid & Timer
 ====================================================
@@ -81,8 +83,8 @@
 ====================================================
 
   - **Developer:**   UndeadWolf
-  - **Version:**     1.5
-  - **Release Date:** 03/20/2025
+  - **Version:**     1.6
+  - **Release Date:** 03/24/2025
 
 New features are currently in the works. Stay tuned.
 
