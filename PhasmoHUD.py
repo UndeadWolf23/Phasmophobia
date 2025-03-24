@@ -1,4 +1,4 @@
-## created by UndeadWolf 3/14/2025 - Calibrated for Phasmophobia v0.12.0.2 ##
+## version 1.6 - created by UndeadWolf23 3/24/2025 - Calibrated for Phasmophobia v0.12.0.2 ##
 
 import pygame
 import sys
@@ -26,7 +26,7 @@ try:
         application_path = os.path.dirname(os.path.abspath(__file__))
     
     # Construct the full path to the icon file
-    icon_path = os.path.join(application_path, 'phasmo_hud_icon.png')
+    icon_path = os.path.join(application_path, '_internal\phasmo_hud_icon.png')
     
     # Load the icon
     app_icon = pygame.image.load(icon_path)
@@ -40,18 +40,25 @@ user32 = ctypes.windll.user32
 screen_width = user32.GetSystemMetrics(0)
 screen_height = user32.GetSystemMetrics(1)
 
-# Constants - adjusted size for smudge timer
-WIDTH, HEIGHT = 200, 150  # Further increased height to accommodate smudge timer
-BAR_WIDTH = 180
-BAR_HEIGHT = 20
+# Constants - increased size for better visibility
+WIDTH, HEIGHT = 250, 180  # Increased from 200x150
+BAR_WIDTH = 220  # Increased from 180
+BAR_HEIGHT = 24  # Increased from 20
 BAR_X = (WIDTH - BAR_WIDTH) // 2
 BAR_Y = (HEIGHT - BAR_HEIGHT) // 2  # Adjusted position
 
 # Hunt timer position
-HUNT_BAR_Y = BAR_Y - 30
+HUNT_BAR_Y = BAR_Y - 35  # Increased spacing
 
 # Smudge timer position
-SMUDGE_TIMER_Y = BAR_Y + 50
+SMUDGE_TIMER_Y = BAR_Y + 60  # Increased spacing
+
+# Footstep pattern helper constants
+FOOTSTEP_Y = HUNT_BAR_Y - 25  # Position above hunt timer
+FOOTSTEP_SIZE = 10  # Increased from 8
+FOOTSTEP_COLOR = (200, 200, 255)  # Light blue color
+FOOTSTEP_HIGHLIGHT_COLOR = (255, 255, 255)  # White for the active step
+FOOTSTEP_STEP_INTERVAL = 0.5  # 2 steps per second = 0.5 seconds per step
 
 # Position in bottom right corner (with some padding)
 WINDOW_X = screen_width - WIDTH - 20
@@ -59,6 +66,7 @@ WINDOW_Y = screen_height - HEIGHT - 40
 
 # Colors
 BACKGROUND = (20, 20, 20, 180)  # Dark with transparency
+CONFIG_OVERLAY_BG = (10, 10, 10, 240)  # Darker background when config is open
 BAR_BACKGROUND = (50, 50, 50)
 STAMINA_COLOR = (0, 255, 0)  # Green
 RECOVERY_COLOR = (255, 0, 0)  # Red
@@ -70,7 +78,9 @@ BUTTON_HOVER_COLOR = (100, 100, 100)
 CAROUSEL_BG = (40, 40, 40)
 SMUDGE_COLOR = (100, 100, 255)  # Light blue for smudge timer
 SPIRIT_COLOR = (255, 255, 0)  # Yellow for Spirit message
-CONFIG_PANEL_BG = (10, 10, 10, 230)  # Very dark with high opacity. This is for the hunt timer config ui background for better visibility.
+CONFIG_PANEL_BG = (10, 10, 10, 250)  # Very dark with high opacity for better visibility
+CHECKBOX_COLOR = (80, 80, 80)
+CHECKBOX_CHECKED_COLOR = (100, 200, 100)  # Green for checked checkbox
 
 # ===== STAMINA MECHANICS - ADJUST THESE VALUES AS NEEDED =====
 MAX_STAMINA = 100
@@ -106,6 +116,10 @@ MAX_SMUDGE_TIME = 180  # Maximum time to display (Spirit - 180s)
 SPIRIT_MESSAGE_DURATION = 3  # Duration to show "Likely Spirit" message
 # ================================
 
+# ===== FOOTSTEP PATTERN HELPER SETTINGS =====
+show_footstep_pattern = True  # Default to enabled
+# ============================================
+
 # Create the window with transparency
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME | pygame.SRCALPHA)
 pygame.display.set_caption("Phasmophobia Overlay")
@@ -120,11 +134,11 @@ win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE,
                       win32con.WS_EX_LAYERED | win32con.WS_EX_TRANSPARENT)
 win32gui.SetLayeredWindowAttributes(hwnd, 0, 255, win32con.LWA_ALPHA)
 
-# Fonts
-font = pygame.font.SysFont('Arial', 12)
-font_small = pygame.font.SysFont('Arial', 10)
-font_medium = pygame.font.SysFont('Arial', 13)  # Medium font for labels
-font_large = pygame.font.SysFont('Arial', 14)  # Larger font for smudge timer
+# Fonts - increased sizes
+font = pygame.font.SysFont('Arial', 14)  # Increased from 12
+font_small = pygame.font.SysFont('Arial', 12)  # Increased from 10
+font_medium = pygame.font.SysFont('Arial', 15)  # Increased from 13
+font_large = pygame.font.SysFont('Arial', 16)  # Increased from 14
 
 # Stamina state
 stamina = MAX_STAMINA
@@ -149,24 +163,109 @@ smudge_max_reached_time = 0
 show_config = False
 temp_map_size = current_map_size
 temp_difficulty = current_difficulty
+temp_show_footstep_pattern = show_footstep_pattern
 
 # Carousel options
 map_sizes = ["Small", "Medium", "Large"]
 difficulties = ["Amateur", "Intermediate", "Pro+"]
 
-# Button dimensions
+# Button dimensions - adjusted sizes
 button_width = 80
-button_height = 25
+button_height = 30
 button_x = (WIDTH - button_width) // 2
-button_y = HEIGHT - button_height - 10
+button_y = HEIGHT - button_height - 10  # Moved up a bit
 
-# Carousel dimensions
+# Checkbox dimensions
+checkbox_size = 16
+checkbox_x = WIDTH // 2 - 80  # Adjusted position
+checkbox_y = HEIGHT - 65  # Positioned above the save button
+
+# Carousel dimensions - reduced sizes
 carousel_width = 100
-carousel_height = 20
-map_carousel_x = (WIDTH - carousel_width) // 2 + 15
-map_carousel_y = 35
-diff_carousel_x = (WIDTH - carousel_width) // 2 + 15
-diff_carousel_y = 65
+carousel_height = 24
+map_carousel_x = WIDTH // 2.5 # Adjusted position
+map_carousel_y = 35  # Adjusted position
+diff_carousel_x = WIDTH // 2.5  # Adjusted position
+diff_carousel_y = 65  # Adjusted position for better spacing
+
+# Function to draw the config UI with proper layout
+def draw_config_ui(mouse_pos, mouse_clicked, temp_map_size, temp_difficulty, temp_show_footstep_pattern):
+    # Draw a dark background panel for the entire config area
+    config_panel_rect = pygame.Rect(10, 5, WIDTH - 20, HEIGHT - 15)
+    panel_surface = pygame.Surface((config_panel_rect.width, config_panel_rect.height), pygame.SRCALPHA)
+    panel_surface.fill(CONFIG_PANEL_BG)
+    screen.blit(panel_surface, config_panel_rect)
+    
+    # Draw a title for the config panel
+    config_title = font_large.render("Hunt Timer Settings", True, TEXT_COLOR)
+    title_rect = config_title.get_rect(center=(WIDTH // 2, 20))
+    screen.blit(config_title, title_rect)
+    
+    # Draw labels with larger font - positioned to the left of carousels
+    map_label = font_medium.render("Map Size:", True, TEXT_COLOR)
+    diff_label = font_medium.render("Difficulty:", True, TEXT_COLOR)
+    screen.blit(map_label, (map_carousel_x - 68, map_carousel_y + 3))
+    screen.blit(diff_label, (diff_carousel_x - 68, diff_carousel_y + 3))
+    
+    # Draw map size carousel
+    map_left_arrow, map_right_arrow = draw_carousel(
+        map_sizes, temp_map_size, map_carousel_x, map_carousel_y, 
+        carousel_width, carousel_height, mouse_pos
+    )
+    
+    # Draw difficulty carousel
+    diff_left_arrow, diff_right_arrow = draw_carousel(
+        difficulties, temp_difficulty, diff_carousel_x, diff_carousel_y, 
+        carousel_width, carousel_height, mouse_pos
+    )
+    
+    # Draw hunt duration preview - centered above the checkbox
+    preview_duration = HUNT_DURATIONS[temp_difficulty][temp_map_size]
+    preview_text = f"Hunt Duration: {preview_duration}s"
+    preview_surface = font_medium.render(preview_text, True, TEXT_COLOR)
+    preview_rect = preview_surface.get_rect(center=(WIDTH // 2, checkbox_y - 15))
+    screen.blit(preview_surface, preview_rect)
+    
+    # Draw footstep pattern checkbox
+    footstep_checkbox_rect = draw_checkbox(
+        checkbox_x, checkbox_y, checkbox_size, 
+        temp_show_footstep_pattern, mouse_pos, 
+        "Show Footstep Pattern"
+    )
+    
+    # Draw save button
+    save_button_rect = draw_button("Save", button_x, button_y, button_width, button_height, mouse_pos)
+    
+    save_clicked = False
+    
+    # Handle clicks
+    if mouse_clicked:
+        # Map size carousel
+        if is_mouse_over_rect(mouse_pos, map_left_arrow):
+            current_index = map_sizes.index(temp_map_size)
+            temp_map_size = map_sizes[(current_index - 1) % len(map_sizes)]
+        elif is_mouse_over_rect(mouse_pos, map_right_arrow):
+            current_index = map_sizes.index(temp_map_size)
+            temp_map_size = map_sizes[(current_index + 1) % len(map_sizes)]
+        
+        # Difficulty carousel
+        if is_mouse_over_rect(mouse_pos, diff_left_arrow):
+            current_index = difficulties.index(temp_difficulty)
+            temp_difficulty = difficulties[(current_index - 1) % len(difficulties)]
+        elif is_mouse_over_rect(mouse_pos, diff_right_arrow):
+            current_index = difficulties.index(temp_difficulty)
+            temp_difficulty = difficulties[(current_index + 1) % len(difficulties)]
+        
+        # Footstep pattern checkbox
+        if is_mouse_over_rect(mouse_pos, footstep_checkbox_rect):
+            temp_show_footstep_pattern = not temp_show_footstep_pattern
+        
+        # Save button
+        if is_mouse_over_rect(mouse_pos, save_button_rect):
+            save_clicked = True
+    
+    # Return updated values and save button state
+    return temp_map_size, temp_difficulty, temp_show_footstep_pattern, save_clicked
 
 # Function to check if mouse is over a rect
 def is_mouse_over_rect(mouse_pos, rect):
@@ -184,6 +283,31 @@ def draw_button(text, x, y, width, height, mouse_pos):
     screen.blit(text_surf, text_rect)
     
     return button_rect
+
+# Function to draw a checkbox
+def draw_checkbox(x, y, size, checked, mouse_pos, label):
+    checkbox_rect = pygame.Rect(x, y, size, size)
+    color = CHECKBOX_CHECKED_COLOR if checked else CHECKBOX_COLOR
+    
+    # Draw the checkbox
+    pygame.draw.rect(screen, color, checkbox_rect)
+    pygame.draw.rect(screen, TEXT_COLOR, checkbox_rect, 1)
+    
+    # Draw checkmark if checked
+    if checked:
+        # Draw a simple checkmark
+        pygame.draw.line(screen, TEXT_COLOR, 
+                         (x + 3, y + size//2), 
+                         (x + size//3, y + size - 4), 2)
+        pygame.draw.line(screen, TEXT_COLOR, 
+                         (x + size//3, y + size - 4), 
+                         (x + size - 3, y + 3), 2)
+    
+    # Draw label
+    label_surf = font_medium.render(label, True, TEXT_COLOR)
+    screen.blit(label_surf, (x + size + 5, y + size//2 - label_surf.get_height()//2))
+    
+    return checkbox_rect
 
 # Function to draw a carousel
 def draw_carousel(options, current_option, x, y, width, height, mouse_pos):
@@ -216,6 +340,44 @@ def draw_carousel(options, current_option, x, y, width, height, mouse_pos):
     screen.blit(right_text, right_text.get_rect(center=right_arrow_rect.center))
     
     return left_arrow_rect, right_arrow_rect
+
+# Function to draw the footstep pattern helper
+def draw_footstep_pattern(current_time, hunt_start_time):
+    # Calculate which step we're on based on elapsed time
+    elapsed_time = current_time - hunt_start_time
+    step_position = (elapsed_time % (FOOTSTEP_STEP_INTERVAL * 2)) / FOOTSTEP_STEP_INTERVAL
+    
+    # Draw footstep indicator text
+    footstep_text = font_small.render("Normal Ghost Footstep Metronome:", True, TEXT_COLOR)
+    text_rect = footstep_text.get_rect(midleft=(BAR_X, FOOTSTEP_Y))
+    screen.blit(footstep_text, text_rect)
+    
+    # Draw the two footstep indicators
+    for i in range(2):
+        # Calculate position
+        x_pos = BAR_X + BAR_WIDTH - 50 + (i * 25)  # Adjusted spacing
+        y_pos = FOOTSTEP_Y
+        
+        # Determine if this step is active
+        is_active = (i == int(step_position))
+        
+        # Calculate bounce effect (only for active step)
+        bounce_offset = 0
+        if is_active:
+            # Create a bounce effect that peaks in the middle of the step interval
+            step_progress = step_position - int(step_position)
+            # Sine wave for smooth bounce: sin(π*x) gives a nice arc from 0 to 1 and back to 0
+            bounce_offset = -5 * math.sin(math.pi * step_progress)  # Increased bounce height
+        
+        # Draw the footstep indicator
+        color = FOOTSTEP_HIGHLIGHT_COLOR if is_active else FOOTSTEP_COLOR
+        pygame.draw.circle(screen, color, (x_pos, y_pos + bounce_offset), FOOTSTEP_SIZE)
+        
+        # Draw a small footprint shape inside the circle
+        if is_active:
+            # Draw a simple footprint shape (just a smaller oval)
+            pygame.draw.ellipse(screen, BACKGROUND, 
+                               (x_pos - 4, y_pos - 5 + bounce_offset, 8, 10))
 
 # Main game loop
 clock = pygame.time.Clock()
@@ -288,6 +450,7 @@ while running:
                 # Initialize temp values
                 temp_map_size = current_map_size
                 temp_difficulty = current_difficulty
+                temp_show_footstep_pattern = show_footstep_pattern
             else:
                 # Make window click-through when hiding config
                 click_through = True
@@ -370,7 +533,11 @@ while running:
             smudge_reached_max = False
     
     # Clear screen with transparent background
-    screen.fill(BACKGROUND)
+    if show_config:
+        # Darker background when config is open
+        screen.fill(CONFIG_OVERLAY_BG)
+    else:
+        screen.fill(BACKGROUND)
     
     # Draw hunt timer if active or if config is shown
     if hunt_active:
@@ -390,6 +557,11 @@ while running:
         text_surface = font.render(hunt_text, True, TEXT_COLOR)
         text_rect = text_surface.get_rect(center=(WIDTH // 2, HUNT_BAR_Y - 10))
         screen.blit(text_surface, text_rect)
+        
+        # Draw footstep pattern helper if enabled
+        if show_footstep_pattern:
+            draw_footstep_pattern(current_time, hunt_start_time)
+            
     elif show_config:
         # Draw empty hunt timer with text when in config mode
         pygame.draw.rect(screen, BAR_BACKGROUND, (BAR_X, HUNT_BAR_Y, BAR_WIDTH, BAR_HEIGHT))
@@ -500,75 +672,24 @@ while running:
     
     # Draw configuration UI if showing
     if show_config:
-        # Draw a dark background panel for the entire config area
-        config_panel_rect = pygame.Rect(10, 5, WIDTH - 20, HEIGHT - 15)
-        panel_surface = pygame.Surface((config_panel_rect.width, config_panel_rect.height), pygame.SRCALPHA)
-        panel_surface.fill(CONFIG_PANEL_BG)
-        screen.blit(panel_surface, config_panel_rect)
-        
-        # Draw a title for the config panel
-        config_title = font_large.render("Hunt Timer Settings", True, TEXT_COLOR)
-        title_rect = config_title.get_rect(center=(WIDTH // 2, 10))
-        screen.blit(config_title, title_rect)
-        
-        # Draw map size carousel
-        map_left_arrow, map_right_arrow = draw_carousel(
-            map_sizes, temp_map_size, map_carousel_x, map_carousel_y, 
-            carousel_width, carousel_height, mouse_pos
+        # Call the function to draw the config UI and handle interactions
+        temp_map_size, temp_difficulty, temp_show_footstep_pattern, save_clicked = draw_config_ui(
+            mouse_pos, mouse_clicked, temp_map_size, temp_difficulty, temp_show_footstep_pattern
         )
         
-        # Draw difficulty carousel
-        diff_left_arrow, diff_right_arrow = draw_carousel(
-            difficulties, temp_difficulty, diff_carousel_x, diff_carousel_y, 
-            carousel_width, carousel_height, mouse_pos
-        )
-        
-        # Draw save button
-        save_button_rect = draw_button("Save", button_x, button_y, button_width, button_height, mouse_pos)
-        
-        # Draw labels with larger font
-        map_label = font_medium.render("Map Size:", True, TEXT_COLOR)
-        diff_label = font_medium.render("Difficulty:", True, TEXT_COLOR)
-        screen.blit(map_label, (map_carousel_x - 49, map_carousel_y + 3))  # Adjusted position for alignment
-        screen.blit(diff_label, (diff_carousel_x - 49, diff_carousel_y + 3))  # Adjusted position for alignment
-        
-        # Draw hunt duration preview
-        preview_duration = HUNT_DURATIONS[temp_difficulty][temp_map_size]
-        preview_text = f"Hunt Duration: {preview_duration}s"
-        preview_surface = font_medium.render(preview_text, True, TEXT_COLOR)
-        preview_rect = preview_surface.get_rect(center=(WIDTH // 2, button_y - 15))
-        screen.blit(preview_surface, preview_rect)
-        
-        # Handle clicks
-        if mouse_clicked:
-            # Map size carousel
-            if is_mouse_over_rect(mouse_pos, map_left_arrow):
-                current_index = map_sizes.index(temp_map_size)
-                temp_map_size = map_sizes[(current_index - 1) % len(map_sizes)]
-            elif is_mouse_over_rect(mouse_pos, map_right_arrow):
-                current_index = map_sizes.index(temp_map_size)
-                temp_map_size = map_sizes[(current_index + 1) % len(map_sizes)]
+        # If save was clicked, apply the changes and hide config
+        if save_clicked:
+            current_map_size = temp_map_size
+            current_difficulty = temp_difficulty
+            show_footstep_pattern = temp_show_footstep_pattern
+            hunt_duration = HUNT_DURATIONS[current_difficulty][current_map_size]
             
-            # Difficulty carousel
-            if is_mouse_over_rect(mouse_pos, diff_left_arrow):
-                current_index = difficulties.index(temp_difficulty)
-                temp_difficulty = difficulties[(current_index - 1) % len(difficulties)]
-            elif is_mouse_over_rect(mouse_pos, diff_right_arrow):
-                current_index = difficulties.index(temp_difficulty)
-                temp_difficulty = difficulties[(current_index + 1) % len(difficulties)]
-            
-            # Save button
-            if is_mouse_over_rect(mouse_pos, save_button_rect):
-                current_map_size = temp_map_size
-                current_difficulty = temp_difficulty
-                hunt_duration = HUNT_DURATIONS[current_difficulty][current_map_size]
-                
-                # Hide config after saving
-                show_config = False
-                click_through = True
-                win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, 
-                                      win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) | 
-                                      win32con.WS_EX_TRANSPARENT)
+            # Hide config after saving
+            show_config = False
+            click_through = True
+            win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, 
+                                  win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) | 
+                                  win32con.WS_EX_TRANSPARENT)
     
     # Update display
     pygame.display.flip()
@@ -579,4 +700,4 @@ while running:
 pygame.quit()
 sys.exit()
 
-## created by UndeadWolf 3/14/2025 - Calibrated for Phasmophobia v0.12.0.2 ##
+## version 1.6 - created by UndeadWolf23 3/24/2025 - Calibrated for Phasmophobia v0.12.0.2 ##
